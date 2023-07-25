@@ -8,18 +8,6 @@
 # especially for the enterprises that we, the RabbitMQ team, have to deal with
 FROM ubuntu:22.04 as build-base
 
-# Create a user with a known UID/GID within range 10000-20000.
-# This is required by Choreo to run the container as a non-root user.
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid 10014 \
-    "choreo"
-# Use the above created unprivileged user
-USER 10014
 
 
 RUN set -eux; \
@@ -290,6 +278,20 @@ ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8
 
 COPY --chown=rabbitmq:rabbitmq 10-defaults.conf 20-management_agent.disable_metrics_collector.conf /etc/rabbitmq/conf.d/
 COPY docker-entrypoint.sh /usr/local/bin/
+
+# Create a user with a known UID/GID within range 10000-20000.
+# This is required by Choreo to run the container as a non-root user.
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid 10014 \
+    "choreo"
+# Use the above created unprivileged user
+USER 10014
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 4369 5671 5672 15691 15692 25672
